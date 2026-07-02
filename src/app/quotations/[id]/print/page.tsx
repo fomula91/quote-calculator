@@ -33,9 +33,9 @@ export default async function PrintPage({
         <PrintButton />
       </div>
 
-      <div className="print-sheet mx-auto w-full max-w-[210mm] rounded-sm border border-line p-12 shadow-2xl">
+      <div className="print-sheet mx-auto w-full max-w-[210mm] border border-line p-12">
         {/* 헤더 */}
-        <div className="flex items-start justify-between border-b-4 border-[#16181c] pb-6">
+        <div className="flex items-start justify-between border-b border-[#111111] pb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-[0.3em]">견 적 서</h1>
             <p className="mt-2 text-sm text-neutral-500">QUOTATION</p>
@@ -84,14 +84,14 @@ export default async function PrintPage({
         {/* 항목 테이블 */}
         <table className="mt-10 w-full text-sm">
           <thead>
-            <tr className="border-y-2 border-[#16181c] text-left">
+            <tr className="border-b border-[#111111] text-left">
               <th className="py-2.5 pr-4 font-semibold">구분</th>
               <th className="py-2.5 pr-4 font-semibold">항목</th>
               <th className="py-2.5 pr-4 text-center font-semibold">수량</th>
               <th className="py-2.5 text-right font-semibold">금액</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200">
+          <tbody className="divide-y divide-line">
             {quotation.items.map((item) => (
               <tr key={item.itemId}>
                 <td className="py-3 pr-4 align-top text-neutral-500">
@@ -135,14 +135,17 @@ export default async function PrintPage({
             <span className="text-neutral-500">부가세 (10%)</span>
             <span className="num">{formatKRW(vat)}</span>
           </div>
-          <div className="flex justify-between border-t-2 border-[#16181c] pt-2 text-base font-bold">
+          <div
+            className="flex justify-between pt-2 text-base font-bold"
+            style={{ borderTop: "1.5px solid #111111" }}
+          >
             <span>합계 금액</span>
             <span className="num">{formatKRW(finalPrice + vat)}</span>
           </div>
         </div>
 
         {quotation.description && (
-          <div className="mt-10 border-t border-neutral-200 pt-4 text-sm">
+          <div className="mt-10 border-t border-line pt-4 text-sm">
             <p className="mb-1 font-semibold text-neutral-500">비고</p>
             <p className="whitespace-pre-wrap">{quotation.description}</p>
           </div>

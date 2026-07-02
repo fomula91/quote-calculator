@@ -1,19 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0b0d10;
-  --bg-raised: #12151b;
-  --bg-inset: #0e1116;
-  --line: #222831;
-  --line-strong: #333c49;
-  --ink: #e8eaee;
-  --ink-dim: #98a1ad;
-  --ink-faint: #5b6470;
-  --accent: #f2b544;
-  --accent-dim: #b98a2f;
-  --accent-ink: #191204;
-  --ok: #52d68a;
-  --danger: #f47272;
+  /* 밝은 "타이포그래피 인쇄물" 콘셉트 — 아주 연한 웜톤 지면 */
+  --bg: #FAFAF8;
+  --bg-raised: #FFFFFF;
+  --bg-inset: #F4F4F1;
+  --line: #E8E8E4;
+  --line-strong: #111111;
+  --ink: #111111;
+  --ink-dim: #666666;
+  --ink-faint: #AAAAAA;
+  /* 포인트 컬러 제거 — 진한 잉크색으로 통일 */
+  --accent: #111111;
+  --accent-dim: #333333;
+  --accent-ink: #FFFFFF;
+  /* 상태색은 채도 낮춰 유지 */
+  --ok: #4b7a5b;
+  --danger: #b0473c;
 }
 
 @theme inline {
@@ -38,14 +41,9 @@ body {
   background-color: var(--bg);
   color: var(--ink);
   font-family: var(--font-plex-kr), "Apple SD Gothic Neo", sans-serif;
-  /* 정밀 계기판 느낌의 미세한 격자 텍스처 */
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
-  background-size: 32px 32px;
 }
 
-/* 가격 숫자는 항상 고정폭·tabular로 */
+/* 가격 숫자는 항상 고정폭·tabular로 (이 앱의 핵심 자산 — 유지) */
 .num {
   font-family: var(--font-jetbrains), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
@@ -53,14 +51,13 @@ body {
 }
 
 .nav-link {
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.25rem;
+  padding: 0.375rem 0;
+  margin: 0 0.375rem;
   color: var(--ink-dim);
-  transition: color 0.15s, background-color 0.15s;
+  transition: color 0.2s ease-out;
 }
 .nav-link:hover {
   color: var(--ink);
-  background-color: var(--bg-raised);
 }
 
 /* 마이크로 라벨 (섹션 헤더) */
@@ -73,21 +70,21 @@ body {
   color: var(--ink-faint);
 }
 
-/* 폼 컨트롤 공통 */
+/* 폼 컨트롤 — 배경 없음, 하단 1px 보더만 */
 .field {
   width: 100%;
-  border: 1px solid var(--line);
-  background-color: var(--bg-inset);
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background-color: transparent;
   color: var(--ink);
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
+  border-radius: 0;
+  padding: 0.45rem 0.1rem;
   font-size: 0.875rem;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.2s ease-out;
 }
 .field:focus {
   outline: none;
-  border-color: var(--accent-dim);
-  box-shadow: 0 0 0 3px rgb(242 181 68 / 0.12);
+  border-bottom-color: var(--ink);
 }
 .field::placeholder {
   color: var(--ink-faint);
@@ -97,62 +94,81 @@ select.field option {
   color: var(--ink);
 }
 input[type="date"].field {
-  color-scheme: dark;
+  color-scheme: light;
 }
 input[type="number"].field {
   font-family: var(--font-jetbrains), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
 
-/* 카드 패널 */
+/* 패널 — 그림자/배경 박스 제거, 상단 1px 보더로만 구획 */
 .panel {
-  border: 1px solid var(--line);
-  background-color: var(--bg-raised);
-  border-radius: 0.5rem;
+  border: none;
+  border-top: 1px solid var(--line);
+  background-color: transparent;
+  border-radius: 0;
 }
 
-/* 버튼 */
+/* 버튼 — 텍스트 + 좌→우로 그려지는 밑줄 */
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
-  border-radius: 0.375rem;
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0;
   font-size: 0.875rem;
   font-weight: 600;
-  border: 1px solid transparent;
-  transition: all 0.15s;
+  color: var(--ink);
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
   cursor: pointer;
+  transition: color 0.2s ease-out, opacity 0.2s ease-out;
+}
+.btn::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.2s ease-out;
+}
+.btn:hover:not(:disabled)::after {
+  transform: scaleX(1);
 }
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* 핵심 액션만 예외: 검정 배경 + 흰 텍스트 */
 .btn-primary {
-  background-color: var(--accent);
+  padding: 0.55rem 1.1rem;
+  background-color: var(--ink);
   color: var(--accent-ink);
 }
-.btn-primary:hover:not(:disabled) {
-  background-color: #ffc95e;
-  box-shadow: 0 0 24px rgb(242 181 68 / 0.25);
+.btn-primary::after {
+  display: none;
 }
+.btn-primary:hover:not(:disabled) {
+  background-color: #000000;
+}
+
 .btn-ghost {
-  border-color: var(--line-strong);
   color: var(--ink-dim);
-  background-color: transparent;
 }
 .btn-ghost:hover:not(:disabled) {
   color: var(--ink);
-  border-color: var(--accent-dim);
 }
+
 .btn-danger {
-  border-color: transparent;
   color: var(--danger);
-  background-color: rgb(244 114 114 / 0.08);
-}
-.btn-danger:hover:not(:disabled) {
-  background-color: rgb(244 114 114 / 0.16);
+  background-color: transparent;
 }
 
 /* 토글 스위치 */
@@ -161,8 +177,8 @@ input[type="number"].field {
   width: 2.25rem;
   height: 1.25rem;
   border-radius: 9999px;
-  background-color: var(--line-strong);
-  transition: background-color 0.18s;
+  background-color: #E0E0DC;
+  transition: background-color 0.2s ease-out;
   flex-shrink: 0;
 }
 .toggle::after {
@@ -173,15 +189,17 @@ input[type="number"].field {
   width: 0.875rem;
   height: 0.875rem;
   border-radius: 9999px;
-  background-color: var(--ink-dim);
-  transition: transform 0.18s, background-color 0.18s;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 1px rgb(17 17 17 / 0.06);
+  transition: transform 0.2s ease-out;
 }
 .toggle[data-on="true"] {
   background-color: var(--accent);
 }
 .toggle[data-on="true"]::after {
   transform: translateX(1rem);
-  background-color: var(--accent-ink);
+  background-color: #FFFFFF;
+  box-shadow: none;
 }
 
 /* 상태 배지 */
@@ -193,7 +211,7 @@ input[type="number"].field {
   padding: 0.125rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 500;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--line);
   color: var(--ink-dim);
 }
 .badge::before {
@@ -204,15 +222,30 @@ input[type="number"].field {
   background-color: currentColor;
 }
 .badge-draft { color: var(--ink-dim); }
-.badge-sent { color: var(--accent); border-color: rgb(242 181 68 / 0.35); }
-.badge-confirmed { color: var(--ok); border-color: rgb(82 214 138 / 0.35); }
-.badge-cancelled { color: var(--danger); border-color: rgb(244 114 114 / 0.35); }
+.badge-sent { color: var(--ink); border-color: var(--ink); }
+.badge-confirmed { color: var(--ok); border-color: rgb(75 122 91 / 0.4); }
+.badge-cancelled { color: var(--danger); border-color: rgb(176 71 60 / 0.4); }
 
-/* 진입 애니메이션 */
+/* ── 절제된 인터랙션 ─────────────────────── */
+
+/* 리스트 row hover: 형제 row들은 살짝 흐려지고, 대상만 또렷 */
+.row-item {
+  transition: opacity 0.2s ease-out, color 0.2s ease-out;
+}
+@media (hover: hover) {
+  .row-list:hover .row-item {
+    opacity: 0.5;
+  }
+  .row-list .row-item:hover {
+    opacity: 1;
+  }
+}
+
+/* 진입 애니메이션 — 인쇄물처럼 조용한 fade */
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -220,23 +253,47 @@ input[type="number"].field {
   }
 }
 .rise-in {
-  animation: rise-in 0.35s ease-out both;
+  animation: rise-in 0.4s ease-out both;
+}
+
+/* 접근성: 모션 최소화 요청 존중 */
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
+  .row-item,
+  .btn,
+  .btn::after,
+  .field,
+  .nav-link,
+  .toggle,
+  .toggle::after {
+    transition: none;
+  }
+  .row-list:hover .row-item {
+    opacity: 1;
+  }
 }
 
 /* ── 인쇄 페이지 ───────────────────────────── */
 .print-sheet {
   background: #ffffff;
-  color: #16181c;
+  color: var(--ink);
   font-family: var(--font-plex-kr), "Apple SD Gothic Neo", sans-serif;
 }
 
 @media print {
   body {
     background: #ffffff !important;
-    background-image: none !important;
   }
   .print\:hidden {
     display: none !important;
+  }
+  .rise-in {
+    animation: none !important;
+  }
+  .row-item {
+    opacity: 1 !important;
   }
   .print-sheet {
     box-shadow: none !important;

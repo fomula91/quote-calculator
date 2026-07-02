@@ -94,7 +94,7 @@ export default function QuotationList() {
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-line">
+          <tbody className="divide-y divide-line row-list">
             {loading ? (
               <tr>
                 <td colSpan={6} className="px-5 py-12 text-center text-ink-faint">
@@ -112,7 +112,7 @@ export default function QuotationList() {
               </tr>
             ) : (
               quotations.map((q) => (
-                <tr key={q.id} className="transition-colors hover:bg-bg-inset/50">
+                <tr key={q.id} className="row-item">
                   <td className="num px-5 py-3.5 text-ink-dim">{q.quotationNumber}</td>
                   <td className="px-4 py-3.5">
                     <p className="font-medium">{q.clientName}</p>

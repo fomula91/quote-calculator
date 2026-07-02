@@ -85,7 +85,13 @@ src/
   `@theme inline`으로 Tailwind 클래스(`bg-bg-raised`, `text-accent`)로 노출
 - 공통 스타일은 `globals.css`의 클래스 사용: `.panel` `.field` `.btn` `.btn-primary`
   `.btn-ghost` `.btn-danger` `.toggle` `.badge` `.micro-label`
-- 다크 테마 고정 ("정밀 계기판" 콘셉트, amber 액센트). 인쇄 페이지만 밝은 지면
+- 밝은 "타이포그래피 인쇄물" 콘셉트 (웜톤 지면 `--bg:#FAFAF8`, 포인트 컬러 없이
+  잉크색 `--accent:#111` 단일). 정적일 땐 인쇄물처럼 조용하고 hover/입력 순간에만
+  절제된 인터랙션(밑줄 draw, row 형제 흐림, 합계 카운트업)이 살아난다.
+  카드 그림자·컬러 배경 박스·zebra·그라데이션·아이콘·이모지 금지.
+  `.panel`은 상단 1px 보더로만 구획, `.field`는 하단 1px 보더만, `.btn`은 텍스트+밑줄
+  (핵심 액션 `.btn-primary`만 검정 배경). 모션은 CSS/rAF만(라이브러리 추가 금지)이며
+  `prefers-reduced-motion` 대응 필수. 인쇄 페이지도 동일한 타이포 언어
 - Next.js 16 주의: `params`/`searchParams`는 Promise — 반드시 `await`
 - better-sqlite3 커넥션은 dev 모듈 재평가 대비 `globalThis.__quoteDb`에 싱글턴 보관
 

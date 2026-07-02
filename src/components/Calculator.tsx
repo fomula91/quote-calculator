@@ -35,6 +35,38 @@ function initialItemStates(): Record<string, ItemState> {
   )
 }
 
+/** 값 변경 시 400ms ease-out 카운트업 (rAF 기반, 라이브러리 없음) */
+function useCountUp(target: number, duration = 400): number {
+  const [display, setDisplay] = useState(target)
+  const displayRef = useRef(target)
+  useEffect(() => {
+    displayRef.current = display
+  }, [display])
+  useEffect(() => {
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
+    const from = displayRef.current
+    const to = target
+    if (reduce || from === to) {
+      setDisplay(to)
+      return
+    }
+    let raf = 0
+    const start = performance.now()
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration)
+      const eased = 1 - Math.pow(1 - t, 3)
+      setDisplay(Math.round(from + (to - from) * eased))
+      if (t < 1) raf = requestAnimationFrame(tick)
+      else setDisplay(to)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [target, duration])
+  return display
+}
+
 export default function Calculator({ quotationId }: { quotationId?: number }) {
   const router = useRouter()
   const isEditing = quotationId != null
@@ -177,6 +209,10 @@ export default function Calculator({ quotationId }: { quotationId?: number }) {
   }, [totalPrice])
 
   const finalPrice = useSuggested ? suggestedPrice : totalPrice
+
+  // 합계 표시는 부드럽게 카운트업
+  const animatedTotal = useCountUp(totalPrice)
+  const animatedFinal = useCountUp(finalPrice)
 
   // ── 상태 업데이트 헬퍼 ────────────────────
   function patchItem(itemId: string, patch: Partial<ItemState>) {
@@ -437,12 +473,12 @@ export default function Calculator({ quotationId }: { quotationId?: number }) {
               <div className="border-b border-line bg-bg-inset/60 px-6 py-3">
                 <p className="micro-label">{group.category}</p>
               </div>
-              <ul className="divide-y divide-line">
+              <ul className="divide-y divide-line row-list">
                 {group.items.map((item) => {
                   const state = itemStates[item.id]
                   const price = priceOf(item.id)
                   return (
-                    <li key={item.id} className="px-6 py-4">
+                    <li key={item.id} className="row-item px-6 py-4">
                       <div className="flex items-start gap-4">
                         <button
                           type="button"
@@ -557,9 +593,9 @@ export default function Calculator({ quotationId }: { quotationId?: number }) {
                 카탈로그에 없는 항목은 직접 추가할 수 있습니다.
               </p>
             ) : (
-              <ul className="divide-y divide-line">
+              <ul className="divide-y divide-line row-list">
                 {customItems.map((item) => (
-                  <li key={item.id} className="flex flex-wrap items-center gap-3 px-6 py-4">
+                  <li key={item.id} className="row-item flex flex-wrap items-center gap-3 px-6 py-4">
                     <input
                       className="field w-44 flex-1"
                       placeholder="항목명"
@@ -638,7 +674,7 @@ export default function Calculator({ quotationId }: { quotationId?: number }) {
             <div className="space-y-3 border-t border-line px-5 py-4">
               <div className="flex items-baseline justify-between">
                 <span className="text-sm text-ink-dim">합계</span>
-                <span className="num font-semibold">{formatKRW(totalPrice)}</span>
+                <span className="num font-semibold">{formatKRW(animatedTotal)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <label className="flex items-center gap-2 text-sm text-ink-dim">
@@ -667,7 +703,7 @@ export default function Calculator({ quotationId }: { quotationId?: number }) {
               <div className="flex items-baseline justify-between border-t border-dashed border-line-strong pt-3">
                 <span className="micro-label">TOTAL</span>
                 <span className="num text-xl font-bold text-accent">
-                  {formatKRW(finalPrice)}
+                  {formatKRW(animatedFinal)}
                 </span>
               </div>
               <p className="text-right text-xs text-ink-faint">
