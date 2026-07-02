@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 견적계산기 (Quote Calculator)
 
-## Getting Started
+항목 선택형 실시간 견적 계산 · 견적서 관리 웹앱. Next.js 풀스택 + SQLite.
 
-First, run the development server:
+## 실행
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+첫 실행 시 `data/quotations.db`(SQLite)가 자동 생성됩니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 페이지
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| 경로 | 설명 |
+|------|------|
+| `/` | 견적 계산기 (신규 작성 / `?id=N`으로 수정) |
+| `/quotations` | 견적서 목록 (검색 · 상태 필터 · 상태 변경 · 삭제) |
+| `/quotations/[id]/print` | 견적서 인쇄 (A4) |
 
-## Learn More
+## API
 
-To learn more about Next.js, take a look at the following resources:
+| 메서드 | 엔드포인트 | 설명 |
+|--------|-----------|------|
+| GET | `/api/quotations?q=&status=` | 목록 조회 |
+| POST | `/api/quotations` | 저장 |
+| GET | `/api/quotations/[id]` | 단건 조회 |
+| PATCH | `/api/quotations/[id]` | 수정 (상태 변경 포함) |
+| DELETE | `/api/quotations/[id]` | 삭제 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 도메인 커스터마이징
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+견적 항목과 가격 규칙은 전부 `src/lib/catalog.ts` 한 파일에 있습니다.
+업종이 정해지면 이 파일의 `CATEGORIES` / `CATALOG`만 교체하면 됩니다.
 
-## Deploy on Vercel
+지원하는 가격 규칙 (`src/lib/pricing.ts` 엔진이 해석):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `fixed` — 고정가
+- `perUnit` — 수량 × 단가
+- `perUnitPerDay` — 수량 × 일수 × 단가 (+ 장기 할인)
+- `attendeeTiered` — 참여 인원 구간별 가격 (+ 초과 과금, 상한)
+- `manual` — 금액 직접 입력
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+새 규칙이 필요하면 `src/lib/types.ts`의 `PricingRule`에 variant를 추가하고
+`src/lib/pricing.ts`의 `calculateRulePrice`에서 해석하면 됩니다.
