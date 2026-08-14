@@ -103,3 +103,36 @@ src/
 curl -s localhost:3000/api/quotations                      # 목록
 curl -s -X POST localhost:3000/api/quotations -H 'Content-Type: application/json' -d '{...}'
 ```
+
+---
+
+# LLM-WIKI 연동 규칙 (repo 내장 모드)
+
+이 프로젝트의 **정본(설계 결정·ADR·측정 결과·과제·로그)은 repo 안의 `llm-wiki/`다.** 코드와 함께 버전 관리되고 함께 커밋된다.
+
+- **세션 시작**: SessionStart 훅이 `llm-wiki/`의 최근 로그·열린 과제를 자동 주입한다. 상세가 필요하면 `llm-wiki/index.md`부터 진입한다(전체를 읽지 않는다).
+- **세션 종료 전**: 의미 있는 작업을 했으면 `llm-wiki/log.md` 오늘 날짜 섹션(`## YYYY-MM-DD`)에 `- **제목**: 내용` 형식으로 기록한다. 코드 변경이 있는데 오늘 기록이 없으면 Stop 훅이 경고한다. 커밋은 코드와 함께 한다.
+- **과제 관리**: 새 과제는 `llm-wiki/Next-Tasks.md`의 `## 열린 과제` 아래 `### N. 제목` + `무엇 → 왜 → 완료 기준`으로 추가하고, 종료되면 종료 기록 표로 옮긴다. (제목 형식은 훅이 파싱하는 계약이다.)
+- **설계 결정**: ADR은 `llm-wiki/Decisions/NNNN-*.md`로 남긴다.
+
+---
+
+# 이 저장소의 검증 단계
+
+**공식 검증 입구는 `npm run build`다** (Next.js 빌드가 TypeScript 타입 체크를 겸한다). 별도 테스트 러너는 없다. `npx tsc` 단독 실행 같은 우회 검증으로 빌드를 대체하지 않는다.
+
+| 변경한 곳 | 1차로 돌릴 것 | 비고 |
+| --- | --- | --- |
+| `lib/pricing.ts`·`catalog.ts`·`types.ts` (도메인 로직) | `npm run build` | 규칙 추가 시 Calculator UI 입력 연동 여부도 확인 |
+| `components/`·`app/*.tsx` (UI) | `npm run build` → dev 서버 육안 확인 | 계산기 실시간 합계·override 동작 확인 |
+| `app/api/`·`lib/db.ts` (API/DB) | `npm run build` → 서버 띄운 뒤 curl 스모크 (위 "검증" 섹션) | DB 스키마 변경 시 `data/quotations.db` 삭제 후 재생성 확인 |
+| 의존성·설정 (`package.json`, `next.config.ts`) | `npm run build` + `npm run lint` | |
+
+실패 시 원인 분류 (초안 — 실측으로 다듬을 것):
+
+| 출력의 첫 신호 | 분류 | 대응 |
+| --- | --- | --- |
+| `Type error:` | 코드 문제 | 해당 타입 오류 수정 |
+| `Module not found` | 코드 또는 의존성 문제 | import 경로 확인 → 없으면 `npm install` |
+| `Error: Cannot find module 'better-sqlite3'` (런타임) | 환경 문제 | `npm rebuild better-sqlite3` — 코드로 고치려 들지 말 것 |
+| `EADDRINUSE` | 환경 문제 | 기존 dev 서버 종료 후 재시도 |
