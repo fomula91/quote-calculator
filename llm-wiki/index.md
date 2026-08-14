@@ -14,6 +14,6 @@
 - [[0001-deploy-vercel-turso]] — 배포 플랫폼: Vercel + Turso (2026-08-14 채택)
 
 ## 상세 (Reference 정본)
-- (없음 — 출처 있는 상세 정본이 생기면 `Reference/`에 추가하고 여기 링크)
+- [[Deployment]] — 배포·운영 정본 (프로덕션 URL, DB, 배포/롤백 방법, 로컬 vs 프로덕션 DB)
 
 최근 변화: [[log]]

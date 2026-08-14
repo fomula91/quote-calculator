@@ -7,6 +7,7 @@
 > 제목은 주입만 보고도 무슨 일이 있었는지 알 수 있게 쓴다.
 
 ## 2026-08-14
+- **배포·운영 정본 문서 작성**: Reference/Deployment.md 신설 — 프로덕션 URL·Vercel/Turso 리소스·배포/롤백 방법·로컬 vs 프로덕션 DB 구분·스모크 절차를 한 곳에 정리. index에 링크.
 - **보안 점검 및 과제 등록**: env/DB 파일 커밋 여부 전수 점검 — 유출 없음(.env.local·data/·.vercel 전부 ignore, 히스토리에도 토큰 0건, 커밋된 건 빈 템플릿 .env.example뿐). 발견된 문제 2건을 과제로 등록: ① API 무인증 공개(Next-Tasks 2번) ② TURSO_AUTH_TOKEN Non-sensitive 타입(3번).
 - **프로덕션 첫 배포 완료**: https://quote-calculator-eight.vercel.app 가동. `vercel link`(GitHub 자동 연결) → Turso 마켓플레이스 연동(`database-citrine-cushion`, env 자동 주입) → 첫 배포(자동 프로덕션 할당) → 프로덕션 스모크 전부 통과. `.env.local`의 TURSO_* 는 로컬이 프로덕션 DB에 붙지 않게 주석 처리. Next-Tasks 1번 종료.
 - **Vercel+Turso 채택 및 DB 계층 전환 완료**: ADR 0001로 플랫폼 결정(Next.js 16 네이티브 + SQLite 방언 호환). db.ts를 better-sqlite3 → `@libsql/client` async로 전환, 호출부(API 라우트 2개·인쇄 페이지) await 전파, `.env.example` 추가. `npm run build` 통과 + 프로덕션 서버 curl 스모크(목록/생성/단건/수정/검색/인쇄/삭제) 전부 통과. 남은 것: Turso 프로비저닝 + Vercel 첫 배포.
