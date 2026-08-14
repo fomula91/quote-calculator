@@ -30,5 +30,10 @@
 
 ## 결과
 
-- 코드는 배포 준비 완료. 남은 것은 Turso DB 프로비저닝 + Vercel 프로젝트 연결 + 첫 배포 (사용자 계정 필요).
-- 트레이드오프: 동기 API의 단순함을 잃음. 로컬 파일 모드가 남아 있어 개발 경험은 동일.
+- **2026-08-14 배포 완료**: https://quote-calculator-eight.vercel.app (프로덕션).
+  Vercel 프로젝트 `fomula91s-projects/quote-calculator`, Turso DB `database-citrine-cushion`
+  (`vercel integration add turso`로 프로비저닝, env 자동 주입). GitHub 연결로 push 자동 배포.
+  프로덕션 URL에서 생성/조회/수정/인쇄/삭제 + 영속성 스모크 전부 통과.
+- 트레이드오프: 동기 API의 단순함을 잃음. 로컬 파일 모드가 남아 있어 개발 경험은 동일
+  (`.env.local`의 TURSO_* 는 주석 처리 — 해제하면 로컬이 프로덕션 DB에 붙음).
+- 참고: 프로덕션 타임스탬프는 서버 UTC 기준 (`datetime('now','localtime')`이 UTC로 동작).

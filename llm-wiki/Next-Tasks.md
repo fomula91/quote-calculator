@@ -6,16 +6,10 @@
 
 ## 열린 과제
 
-### 1. 온라인 배포 — Turso 프로비저닝 + Vercel 첫 배포 (코드 전환은 완료)
-**무엇** — Turso DB 프로비저닝(Vercel Marketplace `vercel integration add turso` 권장, env 자동 주입)
-→ Vercel 프로젝트 연결 → 첫 배포. 코드 쪽 전환([[0001-deploy-vercel-turso]])은 2026-08-14 완료:
-db.ts는 `@libsql/client` async 전환됨, `TURSO_DATABASE_URL` 없으면 로컬 파일로 동작.
-**왜** — 실사용(견적서 공유·외부 접근)을 하려면 온라인 배포가 선행. 도메인(업종) 확정보다 배포가 먼저라고 결정함 (2026-08-14).
-**완료 기준** — 배포된 URL에서 견적 작성 → 저장 → 목록 → 인쇄 페이지까지 동작하고,
-저장한 견적이 재접속 후에도 유지된다(외부 DB 영속성 확인). 사용자의 Vercel/Turso 계정 필요.
-이번에 하지 않는 것: 카탈로그 도메인 교체, 인증/멀티유저.
+- (없음 — 다음 후보: 도메인(업종) 확정 후 카탈로그 교체)
 
 ## 종료 기록
 
 | # | 과제 | 결과 | 정본·근거 |
 |---|---|---|---|
+| 1 | 온라인 배포 (Vercel+Turso) | 2026-08-14 완료 — https://quote-calculator-eight.vercel.app 프로덕션 가동. Turso `database-citrine-cushion` 프로비저닝, GitHub 연결(push 자동 배포). 프로덕션 URL에서 생성/조회/수정/인쇄/삭제 + 영속성 스모크 전부 통과 | [[0001-deploy-vercel-turso]] |

@@ -18,8 +18,9 @@ Claude Code가 우선 읽는 구현 컨텍스트. "지금 무엇을 만드는가
 ## 핵심 판단 (요약)
 - 가격 계산은 하드코딩 대신 선언적 `PricingRule` 5종(fixed/perUnit/perUnitPerDay/attendeeTiered/manual)을 엔진이 해석 — 도메인 교체 시 `catalog.ts`만 바꾼다.
 - 카탈로그는 도메인 미정 상태의 예시 데이터(행사/이벤트 성격) — 업종 확정 시 교체 예정.
-- 배포는 Vercel+Turso로 결정 ([[0001-deploy-vercel-turso]], 2026-08-14). db 계층은 `@libsql/client`로 전환 완료 — 남은 것은 Turso 프로비저닝 + Vercel 첫 배포.
+- 배포는 Vercel+Turso ([[0001-deploy-vercel-turso]]). **프로덕션 가동 중**: https://quote-calculator-eight.vercel.app (Vercel 프로젝트 `fomula91s-projects/quote-calculator`, Turso DB `database-citrine-cushion`, GitHub push 자동 배포).
+- 로컬 개발은 파일 DB(`data/quotations.db`) — `.env.local`의 TURSO_* 는 의도적으로 주석 처리됨(해제 시 로컬이 프로덕션 DB에 붙으니 주의).
 
 ## 지금 단계
 - 계산기·견적서 CRUD·인쇄까지 핵심 기능 구현 완료, GitHub(fomula91/quote-calculator)에 푸시된 상태.
-- **다음 과제는 온라인 배포** (2026-08-14, [[Next-Tasks]] 1번): 코드 전환(Turso/libSQL)은 완료, 남은 것은 Turso 프로비저닝 + Vercel 첫 배포(사용자 계정 필요). 카탈로그 도메인 교체는 그 다음.
+- 온라인 배포 완료 (2026-08-14). 다음 한 걸음 후보: 도메인(업종) 확정 후 카탈로그 교체, 로컬 기존 견적 데이터의 Turso 이관(필요 시).
