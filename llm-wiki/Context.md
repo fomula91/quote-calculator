@@ -11,15 +11,15 @@ Claude Code가 우선 읽는 구현 컨텍스트. "지금 무엇을 만드는가
 
 ## 스택 / 구조
 - Next.js 16 (App Router, Turbopack) + TypeScript + React 19 + Tailwind CSS 4. 상태 관리 라이브러리 없음.
-- SQLite (better-sqlite3) — `data/quotations.db` 로컬 파일, gitignore됨.
+- libSQL (`@libsql/client`) — `TURSO_DATABASE_URL` 있으면 원격 Turso, 없으면 로컬 파일 `data/quotations.db`. db.ts CRUD는 전부 async.
 - `src/lib/` 도메인 코어(types·catalog·pricing·db·format) / `src/app/` 페이지·API / `src/components/` 계산기·목록 UI.
 - 상세 구조·컨벤션·검증 절차는 코드 repo의 `CLAUDE.md`가 정본.
 
 ## 핵심 판단 (요약)
 - 가격 계산은 하드코딩 대신 선언적 `PricingRule` 5종(fixed/perUnit/perUnitPerDay/attendeeTiered/manual)을 엔진이 해석 — 도메인 교체 시 `catalog.ts`만 바꾼다.
 - 카탈로그는 도메인 미정 상태의 예시 데이터(행사/이벤트 성격) — 업종 확정 시 교체 예정.
-- 온라인 배포는 아직 안 됨 (2026-08-14 확인). better-sqlite3 로컬 파일 DB라 서버리스 무료 배포(Cloudflare Workers+D1 또는 Vercel+Turso)를 하려면 db 계층의 비동기 외부 DB 전환이 선행 과제.
+- 배포는 Vercel+Turso로 결정 ([[0001-deploy-vercel-turso]], 2026-08-14). db 계층은 `@libsql/client`로 전환 완료 — 남은 것은 Turso 프로비저닝 + Vercel 첫 배포.
 
 ## 지금 단계
 - 계산기·견적서 CRUD·인쇄까지 핵심 기능 구현 완료, GitHub(fomula91/quote-calculator)에 푸시된 상태.
-- 다음 한 걸음 후보: 배포 방식 확정(Cloudflare vs Vercel) 및 DB 마이그레이션, 또는 도메인(업종) 확정 후 카탈로그 교체.
+- **다음 과제는 온라인 배포** (2026-08-14, [[Next-Tasks]] 1번): 코드 전환(Turso/libSQL)은 완료, 남은 것은 Turso 프로비저닝 + Vercel 첫 배포(사용자 계정 필요). 카탈로그 도메인 교체는 그 다음.

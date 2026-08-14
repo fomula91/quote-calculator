@@ -11,7 +11,7 @@
 - (없음 — 주제별 요약이 생기면 `Summaries/`에 추가하고 여기 링크)
 
 ## Decisions (ADR)
-- (없음 — 첫 결정 시 `Decisions/0001-<slug>.md` 추가하고 여기 링크)
+- [[0001-deploy-vercel-turso]] — 배포 플랫폼: Vercel + Turso (2026-08-14 채택)
 
 ## 상세 (Reference 정본)
 - (없음 — 출처 있는 상세 정본이 생기면 `Reference/`에 추가하고 여기 링크)

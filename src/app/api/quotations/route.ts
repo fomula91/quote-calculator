@@ -4,7 +4,7 @@ import type { QuotationPayload } from "@/lib/types"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
-  const quotations = listQuotations({
+  const quotations = await listQuotations({
     q: searchParams.get("q") ?? undefined,
     status: searchParams.get("status") ?? undefined,
   })
@@ -19,6 +19,6 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     )
   }
-  const quotation = createQuotation(payload)
+  const quotation = await createQuotation(payload)
   return NextResponse.json({ quotation }, { status: 201 })
 }

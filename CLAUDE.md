@@ -9,7 +9,8 @@ congkong 프로젝트의 견적계산기(`CongkongPriceCalculator.vue`)를 본�
 
 - Next.js 16 (App Router, Turbopack) + TypeScript + React 19
 - Tailwind CSS 4 (`@theme inline` 방식, tailwind.config 없음)
-- SQLite (better-sqlite3) — `data/quotations.db`, 첫 실행 시 자동 생성 (gitignore됨)
+- libSQL (`@libsql/client`) — `TURSO_DATABASE_URL` 있으면 원격 Turso, 없으면 로컬 파일
+  `data/quotations.db` (첫 실행 시 자동 생성, gitignore됨). env는 `.env.example` 참조
 - 상태 관리 라이브러리 없음 — React useState/useMemo만 사용
 
 ## 명령어
@@ -29,7 +30,7 @@ src/
 │   ├── types.ts      # 공용 타입 (PricingRule, Quotation, QuotationItem 등)
 │   ├── catalog.ts    # ⭐ 견적 항목 카탈로그 — 도메인 바뀌면 이 파일만 교체
 │   ├── pricing.ts    # 규칙 해석 엔진 calculateRulePrice()
-│   ├── db.ts         # SQLite 커넥션 + quotations 테이블 CRUD
+│   ├── db.ts         # libSQL(Turso) 커넥션 + quotations 테이블 CRUD (전부 async)
 │   └── format.ts     # 원화/날짜 포맷
 ├── app/
 │   ├── page.tsx                        # 계산기 (신규 / ?id=N 수정 모드)
@@ -93,7 +94,8 @@ src/
   (핵심 액션 `.btn-primary`만 검정 배경). 모션은 CSS/rAF만(라이브러리 추가 금지)이며
   `prefers-reduced-motion` 대응 필수. 인쇄 페이지도 동일한 타이포 언어
 - Next.js 16 주의: `params`/`searchParams`는 Promise — 반드시 `await`
-- better-sqlite3 커넥션은 dev 모듈 재평가 대비 `globalThis.__quoteDb`에 싱글턴 보관
+- libSQL 커넥션은 dev 모듈 재평가 대비 `globalThis.__quoteDb`에 싱글턴 보관.
+  db.ts의 모든 CRUD 함수는 async — 호출부에서 반드시 `await`
 
 ## 검증
 
@@ -134,5 +136,5 @@ curl -s -X POST localhost:3000/api/quotations -H 'Content-Type: application/json
 | --- | --- | --- |
 | `Type error:` | 코드 문제 | 해당 타입 오류 수정 |
 | `Module not found` | 코드 또는 의존성 문제 | import 경로 확인 → 없으면 `npm install` |
-| `Error: Cannot find module 'better-sqlite3'` (런타임) | 환경 문제 | `npm rebuild better-sqlite3` — 코드로 고치려 들지 말 것 |
+| Turso 인증/연결 오류 (런타임) | 환경 문제 | `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` 확인 — 로컬 개발은 env 비우면 파일 DB로 동작 |
 | `EADDRINUSE` | 환경 문제 | 기존 dev 서버 종료 후 재시도 |

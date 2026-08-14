@@ -5,9 +5,10 @@
 
 ## 미해결 (Open)
 
-- [ ] (예시) 질문 — 왜 아직 답이 없는지, 무엇을 측정/결정해야 닫히는지 한 줄.
+- (없음)
 
 ## 해소·결정 기록
 
 | 질문 | 결론 | 근거·정본 |
 |---|---|---|
+| 배포 플랫폼: Cloudflare Workers+D1 vs Vercel+Turso | Vercel+Turso — Next.js 16 네이티브 배포 + SQLite 방언이라 전환 비용 최소 | [[0001-deploy-vercel-turso]] (2026-08-14) |

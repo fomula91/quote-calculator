@@ -16,7 +16,7 @@ export default async function PrintPage({
   const quotationId = Number(id)
   if (!Number.isInteger(quotationId) || quotationId <= 0) notFound()
 
-  const quotation = getQuotation(quotationId)
+  const quotation = await getQuotation(quotationId)
   if (!quotation) notFound()
 
   const finalPrice = quotation.useSuggestedPrice

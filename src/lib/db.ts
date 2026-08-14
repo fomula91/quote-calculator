@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import { createClient, type Client } from "@libsql/client"
 import fs from "node:fs"
 import path from "node:path"
 import type { Quotation, QuotationItem, QuotationPayload, QuotationStatus } from "./types"
@@ -6,13 +6,22 @@ import type { Quotation, QuotationItem, QuotationPayload, QuotationStatus } from
 const DATA_DIR = path.join(process.cwd(), "data")
 
 // Next.js dev 모드의 모듈 재평가로 커넥션이 중복 생성되지 않도록 globalThis에 보관
-const globalForDb = globalThis as unknown as { __quoteDb?: Database.Database }
+const globalForDb = globalThis as unknown as {
+  __quoteDb?: { client: Client; ready: Promise<unknown> }
+}
 
-function createDb(): Database.Database {
-  fs.mkdirSync(DATA_DIR, { recursive: true })
-  const db = new Database(path.join(DATA_DIR, "quotations.db"))
-  db.pragma("journal_mode = WAL")
-  db.exec(`
+// TURSO_DATABASE_URL이 있으면 원격 Turso, 없으면 로컬 파일(data/quotations.db)로 동작.
+// 빌드 타임에 env가 없어도 죽지 않도록 lazy 초기화 유지.
+function createDb(): { client: Client; ready: Promise<unknown> } {
+  const url = process.env.TURSO_DATABASE_URL
+  let client: Client
+  if (url) {
+    client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN })
+  } else {
+    fs.mkdirSync(DATA_DIR, { recursive: true })
+    client = createClient({ url: `file:${path.join(DATA_DIR, "quotations.db")}` })
+  }
+  const ready = client.execute(`
     CREATE TABLE IF NOT EXISTS quotations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       quotation_number TEXT NOT NULL DEFAULT '',
@@ -33,12 +42,13 @@ function createDb(): Database.Database {
       updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
     )
   `)
-  return db
+  return { client, ready }
 }
 
-export function getDb(): Database.Database {
+export async function getDb(): Promise<Client> {
   if (!globalForDb.__quoteDb) globalForDb.__quoteDb = createDb()
-  return globalForDb.__quoteDb
+  await globalForDb.__quoteDb.ready
+  return globalForDb.__quoteDb.client
 }
 
 interface QuotationRow {
@@ -83,93 +93,100 @@ function rowToQuotation(row: QuotationRow): Quotation {
   }
 }
 
-export function listQuotations(filter?: {
+export async function listQuotations(filter?: {
   q?: string
   status?: string
-}): Quotation[] {
-  const db = getDb()
+}): Promise<Quotation[]> {
+  const db = await getDb()
   const clauses: string[] = []
-  const params: Record<string, string> = {}
+  const args: Record<string, string> = {}
   if (filter?.q) {
     clauses.push(
       "(client_name LIKE :q OR event_name LIKE :q OR quotation_number LIKE :q)"
     )
-    params.q = `%${filter.q}%`
+    args.q = `%${filter.q}%`
   }
   if (filter?.status) {
     clauses.push("status = :status")
-    params.status = filter.status
+    args.status = filter.status
   }
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : ""
-  const rows = db
-    .prepare(`SELECT * FROM quotations ${where} ORDER BY id DESC`)
-    .all(params) as QuotationRow[]
-  return rows.map(rowToQuotation)
+  const result = await db.execute({
+    sql: `SELECT * FROM quotations ${where} ORDER BY id DESC`,
+    args,
+  })
+  return (result.rows as unknown as QuotationRow[]).map(rowToQuotation)
 }
 
-export function getQuotation(id: number): Quotation | null {
-  const row = getDb()
-    .prepare("SELECT * FROM quotations WHERE id = ?")
-    .get(id) as QuotationRow | undefined
+export async function getQuotation(id: number): Promise<Quotation | null> {
+  const db = await getDb()
+  const result = await db.execute({
+    sql: "SELECT * FROM quotations WHERE id = ?",
+    args: [id],
+  })
+  const row = result.rows[0] as unknown as QuotationRow | undefined
   return row ? rowToQuotation(row) : null
 }
 
-export function createQuotation(payload: QuotationPayload): Quotation {
-  const db = getDb()
-  const insert = db.prepare(`
-    INSERT INTO quotations (
-      client_name, event_name, location, start_date, end_date,
-      description, status, attendees, days,
-      use_suggested_price, suggested_price, total_price, items_json
-    ) VALUES (
-      :clientName, :eventName, :location, :startDate, :endDate,
-      :description, :status, :attendees, :days,
-      :useSuggestedPrice, :suggestedPrice, :totalPrice, :itemsJson
-    )
-  `)
-  const result = insert.run({
-    clientName: payload.clientName,
-    eventName: payload.eventName,
-    location: payload.location,
-    startDate: payload.startDate,
-    endDate: payload.endDate,
-    description: payload.description,
-    status: payload.status,
-    attendees: payload.attendees,
-    days: payload.days,
-    useSuggestedPrice: payload.useSuggestedPrice ? 1 : 0,
-    suggestedPrice: payload.suggestedPrice,
-    totalPrice: payload.totalPrice,
-    itemsJson: JSON.stringify(payload.items),
+export async function createQuotation(
+  payload: QuotationPayload
+): Promise<Quotation> {
+  const db = await getDb()
+  const result = await db.execute({
+    sql: `
+      INSERT INTO quotations (
+        client_name, event_name, location, start_date, end_date,
+        description, status, attendees, days,
+        use_suggested_price, suggested_price, total_price, items_json
+      ) VALUES (
+        :clientName, :eventName, :location, :startDate, :endDate,
+        :description, :status, :attendees, :days,
+        :useSuggestedPrice, :suggestedPrice, :totalPrice, :itemsJson
+      )
+    `,
+    args: {
+      clientName: payload.clientName,
+      eventName: payload.eventName,
+      location: payload.location,
+      startDate: payload.startDate,
+      endDate: payload.endDate,
+      description: payload.description,
+      status: payload.status,
+      attendees: payload.attendees,
+      days: payload.days,
+      useSuggestedPrice: payload.useSuggestedPrice ? 1 : 0,
+      suggestedPrice: payload.suggestedPrice,
+      totalPrice: payload.totalPrice,
+      itemsJson: JSON.stringify(payload.items),
+    },
   })
   const id = Number(result.lastInsertRowid)
   const number = `Q-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${String(id).padStart(4, "0")}`
-  db.prepare("UPDATE quotations SET quotation_number = ? WHERE id = ?").run(
-    number,
-    id
-  )
-  return getQuotation(id)!
+  await db.execute({
+    sql: "UPDATE quotations SET quotation_number = ? WHERE id = ?",
+    args: [number, id],
+  })
+  return (await getQuotation(id))!
 }
 
-export function updateQuotation(
+export async function updateQuotation(
   id: number,
   patch: Partial<QuotationPayload>
-): Quotation | null {
-  const existing = getQuotation(id)
+): Promise<Quotation | null> {
+  const existing = await getQuotation(id)
   if (!existing) return null
   const merged: QuotationPayload = { ...existing, ...patch }
-  getDb()
-    .prepare(
-      `UPDATE quotations SET
+  const db = await getDb()
+  await db.execute({
+    sql: `UPDATE quotations SET
         client_name = :clientName, event_name = :eventName, location = :location,
         start_date = :startDate, end_date = :endDate, description = :description,
         status = :status, attendees = :attendees, days = :days,
         use_suggested_price = :useSuggestedPrice, suggested_price = :suggestedPrice,
         total_price = :totalPrice, items_json = :itemsJson,
         updated_at = datetime('now', 'localtime')
-      WHERE id = :id`
-    )
-    .run({
+      WHERE id = :id`,
+    args: {
       id,
       clientName: merged.clientName,
       eventName: merged.eventName,
@@ -184,11 +201,16 @@ export function updateQuotation(
       suggestedPrice: merged.suggestedPrice,
       totalPrice: merged.totalPrice,
       itemsJson: JSON.stringify(merged.items),
-    })
+    },
+  })
   return getQuotation(id)
 }
 
-export function deleteQuotation(id: number): boolean {
-  const result = getDb().prepare("DELETE FROM quotations WHERE id = ?").run(id)
-  return result.changes > 0
+export async function deleteQuotation(id: number): Promise<boolean> {
+  const db = await getDb()
+  const result = await db.execute({
+    sql: "DELETE FROM quotations WHERE id = ?",
+    args: [id],
+  })
+  return result.rowsAffected > 0
 }
