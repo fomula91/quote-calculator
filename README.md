@@ -1,6 +1,8 @@
 # 견적계산기 (Quote Calculator)
 
-항목 선택형 실시간 견적 계산 · 견적서 관리 웹앱. Next.js 풀스택 + SQLite.
+항목 선택형 실시간 견적 계산 · 견적서 관리 웹앱. Next.js 풀스택 + libSQL(Turso).
+
+**프로덕션**: https://quote-calculator-eight.vercel.app (Vercel, main 브랜치 push 시 자동 배포)
 
 ## 실행
 
@@ -9,7 +11,9 @@ npm install
 npm run dev   # http://localhost:3000
 ```
 
-첫 실행 시 `data/quotations.db`(SQLite)가 자동 생성됩니다.
+로컬 개발은 환경 변수 없이 동작합니다 — 첫 실행 시 로컬 파일 DB `data/quotations.db`가
+자동 생성됩니다. `TURSO_DATABASE_URL`을 설정하면 원격 Turso DB에 연결됩니다
+(`.env.example` 참조 — 프로덕션은 Vercel Marketplace의 Turso 연동이 자동 주입).
 
 ## 페이지
 
